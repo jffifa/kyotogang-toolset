@@ -6,13 +6,14 @@ import cookielib
 import time
 import threading
 import copy
+import xmlparse
 
 LOGIN_URL = 'http://bbs.saraba1st.com/2b/member.php?mod=logging&action=login&loginsubmit=yes&infloat=yes&lssubmit=yes&inajax=1'
 LOGIN_REFERER = 'http://bbs.saraba1st.com/2b/forum-6-1.html'
 LOGIN_TEST = 'http://bbs.saraba1st.com/2b/home.php?mod=spacecp&ac=credit&showcredit=1'
 RATE_REFERER = 'http://bbs.saraba1st.com/2b/forum.php?mod=viewthread&tid=974473&page=1'
-USERNAME = '人性墮落爱撕衣'
-PASSWORD = '人性墮落爱撕衣'
+USERNAME = '内田彩'
+PASSWORD = '134134'
 
 cookie = cookielib.CookieJar()
 login_header = [
@@ -53,8 +54,19 @@ for item in cookie:
 print ret.read()
 """
 
+#here we need to get pid
+POST_PER_PAGE = 30
+TID = 974473
+FLOOR = 32
+page = (FLOOR-1)/POST_PER_PAGE+1
+#print page
+GET_PID_URL = '-'.join(['http://bbs.saraba1st.com/2b/thread',str(TID),str(page),'1'])+'.html'
+tmp = opener.open(GET_PID_URL)
+getPidStr = tmp.read()
+print xmlparse.getPid(getPidStr, FLOOR-POST_PER_PAGE*(page-1))
+
 #now we have logined
-RATE_PRE_URL='http://bbs.saraba1st.com/2b/forum.php?mod=misc&action=rate&tid=974473&pid=23656423&infloat=yes&handlekey=rate&t=1385153545230&inajax=1&ajaxtarget=fwin_content_rate'
+RATE_PRE_URL='http://bbs.saraba1st.com/2b/forum.php?mod=misc&action=rate&tid=974473&pid=23656423&infloat=yes&handlekey=rate&t=1385210550256&inajax=1&ajaxtarget=fwin_content_rate'
 rate_pre_header = [
         ('Accept', '*/*'),
         #('Accept-Encoding','gzip,deflate,sdch'),
@@ -71,7 +83,6 @@ ret = opener.open(RATE_PRE_URL)
 formStr = ret.read()
 #print formStr
 
-import xmlparse
 table = xmlparse.getForm(formStr)
 
 #now we got the rate form
@@ -105,9 +116,11 @@ reqCookie.extract_cookies(loginRetSession, req)
 reqCookie.extract_cookies(ret, req)
 reqCookie.add_cookie_header(req)
 
+"""
 for i in xrange(RATE_CONCURRENCY):
     t = threading.Thread(target=doRate, args=(req,))
     t.start()
+"""
 """
 ret = opener.open(RATE_URL, urllib.urlencode(rateData))
 print ret.read()
