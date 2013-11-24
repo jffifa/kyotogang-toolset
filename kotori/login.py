@@ -45,6 +45,8 @@ class LoginCtrl(object):
 
 
     THREAD_INTERVAL = 30 # keep connect every THREAD_INTERVAL seconds
+    STATUS_LOGOUT = 'logout' # account hasn't logined yet
+    STATUS_LOGIN = 'login' # account has logined
 
 
     def __init__(self):
@@ -56,6 +58,7 @@ class LoginCtrl(object):
             'username':username, 
             'password':password,
             'enable':enable,
+            'status':self.__class__.STATUS_LOGIN,
             }
 
     def set_enable(self, username='', enable=True):

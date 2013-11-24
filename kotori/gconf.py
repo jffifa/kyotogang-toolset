@@ -1,5 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
+import sys
 import os
 import urlparse
 import urllib
@@ -8,12 +9,17 @@ class GConf:
     """global configuration
     """
 
+    GROUP_ID = '10079277'
+    
+    # shell encodings
+    SHELL_ENCODING = sys.stdout.encoding
 
     # debug mode
     DEBUG = True
 
-    # global dir settings
+    # global dir and file path settings
     BASE_DIR = os.path.dirname(__file__)
+    USER_DATA_PATH = os.path.join(BASE_DIR, 'data', 'user')
 
     # global conf for urls
     PROTOCOL = 'http'
