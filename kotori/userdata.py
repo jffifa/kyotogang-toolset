@@ -43,6 +43,8 @@ class UserData(object):
     def load_user_data(self, filepath=None):
         if filepath is None:
             filepath = gconf.USER_DATA_PATH
+        if not os.path.exists(os.path.dirname(filepath)):
+            os.makedirs(os.path.dirname(filepath))
         if not os.path.exists(filepath):
             f = open(filepath, 'wb')
             cPickle.dump([], f, 2)
@@ -58,6 +60,8 @@ class UserData(object):
     def save_user_data(self, userData, filepath=None):
         if filepath is None:
             filepath = gconf.USER_DATA_PATH
+        if not os.path.exists(os.path.dirname(filepath)):
+            os.makedirs(os.path.dirname(filepath))
         encUserData = map(lambda (x,y): (x,self._encode(y)), userData)
         f = open(filepath, 'wb')
         cPickle.dump(encUserData, f, 2)
