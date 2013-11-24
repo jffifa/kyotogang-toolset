@@ -59,13 +59,17 @@ def add_user(userData=[]):
 
 def del_user(userData=[]):
     p_user_data(userData)
-    username = raw_input(s(u'请输入用户编号或用户名: '))
-    uid = 0
+    username = raw_input(s(u'请输入用户编号或用户名(0表示清空): '))
+    uid = -1
     try:
         uid = int(username)
     except:
         pass
-    if uid == 0:
+    if uid == -1:
+        pass
+    elif uid == 0:
+        pass
+    else:
         pass
 
 def login(userData=[]):
@@ -99,7 +103,6 @@ if __name__ == '__main__':
                 p_user_data(userData)
             elif cmd == 'q':
                 break
-        time.sleep(1111)
         
     except KeyboardInterrupt:
         sys.exit(1)
