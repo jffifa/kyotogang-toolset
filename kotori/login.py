@@ -54,6 +54,7 @@ class LoginCtrl(object):
     def __init__(self):
         self.users = {}
         self.loginThread = None
+        self.logined = False
 
     def add_user(self, username='', password=''):
         self.users[username] = {
@@ -61,6 +62,9 @@ class LoginCtrl(object):
             'password':password,
             'status':gconf.SESSION_STATUS_INIT
             }
+    
+    def clear_users(self):
+        self.users = {}
 
     def login(self):
         self.loginThread = LoginThread(self.__class__.THREAD_INTERVAL)
@@ -77,11 +81,14 @@ class LoginCtrl(object):
                 for username, status in statuses.iteritems():
                     self.users[username]['status'] = status
                 break
+        self.logined = True
 
     def logout(self):
         self.loginThread.stop()
         self.loginThread.join()
         self.loginThread = None
+        self.clear_users()
+        self.logined = False
 
     def relogin(self):
         if self.loginThread:

@@ -13,6 +13,22 @@ def s(u_str):
 def t(str):
     return str.decode(gconf.SHELL_ENCODING)
 
+def gnu(uname, passwd):
+    return {
+        'username':uname,
+        'password':passwd,
+        'status':gconf.SESSION_STATUS_INIT,
+        'ratelim':-1,
+        }
+
+def lud():
+    ud = userdata.UserData().load_user_data()
+    return {u[0]: gnu(u[0], u[1]) for u in ud}
+
+def sud(userData={}):
+    l = [(u['username'], u['password']) for u in userData.values()]
+    userdata.UserData().save_user_data(l)
+
 def p_kotori():
     pass
 
@@ -31,18 +47,23 @@ def p_usage():
     q: 退出"""
     print s(usg)
 
-def p_user_data(userData=[]):
+def p_user_data(userData={}, showRatelim=False):
     p_cutline()
     print s(u'当前已添加的用户列表:')
     if len(userData) == 0:
         print s(u'无')
     else:
-        for u in enumerate(userData, start=1):
-            print str(u[0])+'>', u[1][0]
+        for u in enumerate(userData.itervalues(), start=1):
+            print str(u[0])+'>', s(u[1]['username'].decode(gconf.INTERNAL_ENCODING)),
+            if u[1]['status'] == gconf.SESSION_STATUS_LOGIN:
+                print s(u'[已登录]'),
+            else:
+                print s(u'[未登录]'),
+            print
 
 def add_user(userData=[]):
     p_cutline()
-    username = raw_input(s(u'请输入用户名: '))
+    username = t(raw_input(s(u'请输入用户名: '))).encode(gconf.INTERNAL_ENCODING)
     password = ''
     while True:
         print s(u'请输入密码(屏幕上不会显示):'),
@@ -54,29 +75,80 @@ def add_user(userData=[]):
         else:
             password = pwd1
             break
-    userData.append((t(username).encode(gconf.INTERNAL_ENCODING), password))
-    userdata.UserData().save_user_data(userData)
-
-def del_user(userData=[]):
-    p_user_data(userData)
-    username = raw_input(s(u'请输入用户编号或用户名(0表示清空): '))
-    uid = -1
-    try:
-        uid = int(username)
-    except:
-        pass
-    if uid == -1:
-        pass
-    elif uid == 0:
-        pass
+    if username in userData:
+        while True:
+            c = raw_input(s(u'用户已存在, 是否覆盖(y=是, n=否): '))
+            if c == 'y':
+                userData[username]['password'] = password
+                break
+            elif c == 'n':
+                confirm = False
+                break
     else:
-        pass
+        userData[username] = gnu(username, password)
 
-def login(userData=[]):
-    pass
+    sud(userData)
 
-def relogin(userData=[]):
-    pass
+    if gconf.DEBUG:
+        print userData
+
+    return userData
+
+def del_user(userData={}):
+    while True:
+        p_user_data(userData)
+        username = t(raw_input(s(u'请输入用户编号或用户名(0表示清空, 直接回车取消): '))).encode(gconf.INTERNAL_ENCODING)
+        uid = -1
+
+        try:
+            uid = int(username)
+        except:
+            pass
+
+        if username == '':
+            break
+        elif uid == 0:
+            userData = {}
+            break
+        else:
+            if uid != -1:
+                if uid < 0 or uid > len(userData):
+                    print s(u'用户不存在')
+                else:
+                    un = userData.values()[uid-1]['username']
+                    del userData[un]
+                    break
+            else:
+                if not username in userData:
+                    print s(u'用户不存在')
+                else:
+                    del userData[username]
+                    break
+
+    sud(userData)
+
+    if gconf.DEBUG:
+        print userData
+
+    return userData
+
+def lg(lCtrl=None, userData=[]):
+    if lCtrl.logined:
+        print s(u'已经在挂机中')
+    else:
+        for u in userData.itervalues():
+            lCtrl.add_user(u['username'], u['password'])
+        lCtrl.login()
+        for u in userData.itervalues():
+            u['status'] = lCtrl.users[u['username']]['status']
+        p_user_data(userData)
+    return userData
+
+def rlg(lCtrl=None, userData=[]):
+    if lCtrl.logined:
+        lCtrl.logout()
+    userData = lg(lCtrl, userData)
+    return userData
 
 if __name__ == '__main__':
     try:
@@ -89,18 +161,24 @@ if __name__ == '__main__':
             sys.exit(0)
 
         p_kotori()
-        userData = userdata.UserData().load_user_data()
+        userData = lud()
         p_user_data(userData)
+
+        lCtrl = login.LoginCtrl()
 
         while True:
             p_usage()
             cmd = raw_input(s(u'请输入命令: '))
             if cmd == 'a':
-                add_user(userData)
+                userData = add_user(userData)
             elif cmd == 'd':
-                del_user(userData)
+                userData = del_user(userData)
             elif cmd == 'p':
                 p_user_data(userData)
+            elif cmd == 'l':
+                userData = lg(lCtrl, userData)
+            elif cmd == 'r':
+                userData = rlg(lCtrl, userData)
             elif cmd == 'q':
                 break
         

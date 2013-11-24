@@ -16,7 +16,7 @@ class GConf:
     INTERNAL_ENCODING = 'utf_8'
 
     # debug mode
-    DEBUG = True
+    DEBUG = False
 
     # global dir and file path settings
     BASE_DIR = os.path.dirname(__file__)

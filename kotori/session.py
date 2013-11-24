@@ -45,13 +45,18 @@ class Session(object):
             print res.read()
     
     def keep_connect(self):
+        if gconf.DEBUG:
+            print self.username, self.status
+
         if self.status == gconf.SESSION_STATUS_LOGIN:
             res = self.stream.open(self.keepConnUrl)
 
+        """"
         if gconf.DEBUG:
             for item in self.cookie:
                 print item.name, item.value
             print res.read()
+        """
 
     def logout(self):
         pass
