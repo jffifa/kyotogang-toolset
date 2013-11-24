@@ -45,8 +45,10 @@ def add_user(userData=[]):
     username = raw_input(s(u'请输入用户名: '))
     password = ''
     while True:
-        pwd1 = getpass.getpass(s(u'请输入密码(屏幕上不会显示): '))
-        pwd2 = getpass.getpass(s(u'请再次输入密码: '))
+        print s(u'请输入密码(屏幕上不会显示):'),
+        pwd1 = getpass.getpass('')
+        print s(u'请再次输入密码:'),
+        pwd2 = getpass.getpass('')
         if pwd1 != pwd2:
             print s(u'两次输入密码不一致！')
         else:
