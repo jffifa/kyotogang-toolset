@@ -59,7 +59,6 @@ class UserData(object):
         if filepath is None:
             filepath = gconf.USER_DATA_PATH
         encUserData = map(lambda (x,y): (x,self._encode(y)), userData)
-        print encUserData
         f = open(filepath, 'wb')
         cPickle.dump(encUserData, f, 2)
         f.close()

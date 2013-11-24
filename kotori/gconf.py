@@ -11,8 +11,9 @@ class GConf:
 
     GROUP_ID = '10079277'
     
-    # shell encodings
+    # encodings
     SHELL_ENCODING = sys.stdout.encoding
+    INTERNAL_ENCODING = 'utf_8'
 
     # debug mode
     DEBUG = True
@@ -67,3 +68,7 @@ class GConf:
         'Referer':FORUM_URL ,
         }
 
+    # session status
+    SESSION_STATUS_INIT = 0
+    SESSION_STATUS_LOGIN = 1
+    SESSION_STATUS_LOGOUT = 2

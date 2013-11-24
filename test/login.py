@@ -37,6 +37,7 @@ data = {
         }
 
 ret = opener.open(LOGIN_URL, urllib.urlencode(data))
+print ret.read()
 
 loginRetSession = copy.copy(ret)
 """
@@ -66,7 +67,7 @@ getPidStr = tmp.read()
 print xmlparse.getPid(getPidStr, FLOOR-POST_PER_PAGE*(page-1))
 
 #now we have logined
-RATE_PRE_URL='http://bbs.saraba1st.com/2b/forum.php?mod=misc&action=rate&tid=974473&pid=23656423&infloat=yes&handlekey=rate&t=1385210550256&inajax=1&ajaxtarget=fwin_content_rate'
+RATE_PRE_URL='http://bbs.saraba1st.com/2b/forum.php?mod=misc&action=rate&tid=974473&pid=23656423&infloat=yes&handlekey=rate&t=1385210550256&inajax=1&ajaxtarget=fwin_content_rate' # here param t is timestamp
 rate_pre_header = [
         ('Accept', '*/*'),
         #('Accept-Encoding','gzip,deflate,sdch'),

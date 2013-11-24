@@ -3,11 +3,13 @@
 import cookielib
 import urllib
 import urllib2
+import parser
 from gconf import GConf as gconf
 
 class Session(object):
     """stage1st session
     """
+
 
     def __init__(self, username, password):
         self.username = username
@@ -21,6 +23,8 @@ class Session(object):
         self.stream = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie))
         self.stream.addheaders = self.httpHeader.items()
 
+        self.status = gconf.SESSION_STATUS_INIT
+
     def login(self):
         postData = {
             'fastloginfield':'username',
@@ -31,6 +35,11 @@ class Session(object):
         }
         encPostData = urllib.urlencode(postData)
         res = self.stream.open(self.loginUrl, encPostData)
+
+        if parser.verifyLogin(res.read()):
+            self.status = gconf.SESSION_STATUS_LOGIN
+        else:
+            self.status = gconf.SESSION_STATUS_LOGOUT
 
         if gconf.DEBUG:
             print res.read()

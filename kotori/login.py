@@ -3,6 +3,7 @@
 import session
 import time
 import threading
+from gconf import GConf as gconf
 
 class LoginThread(threading.Thread):
     """login thread
@@ -15,6 +16,9 @@ class LoginThread(threading.Thread):
         self.intCnt = 0
         self.sessions = {}
         self.threadStop = False
+
+    def get_status(self):
+        return dict([(u, s.status) for (u, s) in self.sessions.iteritems()])
 
     def run(self):
         # login each session
@@ -45,34 +49,35 @@ class LoginCtrl(object):
 
 
     THREAD_INTERVAL = 30 # keep connect every THREAD_INTERVAL seconds
-    STATUS_LOGOUT = 'logout' # account hasn't logined yet
-    STATUS_LOGIN = 'login' # account has logined
 
 
     def __init__(self):
         self.users = {}
         self.loginThread = None
 
-    def add_user(self, username='', password='', enable=True):
+    def add_user(self, username='', password=''):
         self.users[username] = {
             'username':username, 
             'password':password,
-            'enable':enable,
-            'status':self.__class__.STATUS_LOGIN,
+            'status':gconf.SESSION_STATUS_INIT
             }
 
-    def set_enable(self, username='', enable=True):
-        if username in self.users:
-            self.users[username]['enable'] = enable
 
     def login(self):
         self.loginThread = LoginThread(self.__class__.THREAD_INTERVAL)
         for user in self.users.itervalues():
-            if (user['enable']):
-                self.loginThread.sessions[user['username']] = session.Session(
-                    username=user['username'],
-                    password=user['password'])
+            self.loginThread.sessions[user['username']] = session.Session(
+                username=user['username'],
+                password=user['password'])
         self.loginThread.start()
+        while True:
+            statuses = self.loginThread.get_status()
+            if gconf.SESSION_STATUS_INIT in statuses.itervalues():
+                time.sleep(1)
+            else:
+                for username, status in statuses.iteritems():
+                    self.users[username]['status'] = status
+                break
 
     def logout(self):
         self.loginThread.stop()
@@ -85,4 +90,14 @@ class LoginCtrl(object):
             self.login()
         else:
             self.login()
+
+# test case
+if __name__ == '__main__':
+    lc = LoginCtrl()
+    lc.add_user('内田彩', '134134')
+    lc.add_user('狂三小天使', '134134')
+    lc.login()
+    print lc.users['内田彩']['status']
+    print lc.users['狂三小天使']['status']
+    lc.logout()
 
