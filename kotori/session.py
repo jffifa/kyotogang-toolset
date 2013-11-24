@@ -45,7 +45,8 @@ class Session(object):
             print res.read()
     
     def keep_connect(self):
-        res = self.stream.open(self.keepConnUrl)
+        if self.status == gconf.SESSION_STATUS_LOGIN:
+            res = self.stream.open(self.keepConnUrl)
 
         if gconf.DEBUG:
             for item in self.cookie:

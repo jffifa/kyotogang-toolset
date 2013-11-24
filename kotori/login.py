@@ -62,7 +62,6 @@ class LoginCtrl(object):
             'status':gconf.SESSION_STATUS_INIT
             }
 
-
     def login(self):
         self.loginThread = LoginThread(self.__class__.THREAD_INTERVAL)
         for user in self.users.itervalues():
@@ -73,7 +72,7 @@ class LoginCtrl(object):
         while True:
             statuses = self.loginThread.get_status()
             if gconf.SESSION_STATUS_INIT in statuses.itervalues():
-                time.sleep(1)
+                time.sleep(0.1)
             else:
                 for username, status in statuses.iteritems():
                     self.users[username]['status'] = status
@@ -95,9 +94,9 @@ class LoginCtrl(object):
 if __name__ == '__main__':
     lc = LoginCtrl()
     lc.add_user('内田彩', '134134')
-    lc.add_user('狂三小天使', '134134')
+    #lc.add_user('狂三小天使', '134134')
     lc.login()
     print lc.users['内田彩']['status']
-    print lc.users['狂三小天使']['status']
+    #print lc.users['狂三小天使']['status']
     lc.logout()
 
