@@ -11,5 +11,10 @@ kyotogang-toolset
 
 2. 运行shell.py
 
-## Linux/Unix 用户
+## Linux/Unix 用户使用方法
 1. 运行shell.py，你知道怎么做。
+
+## 常见问题
+1. Windows XP不能输入中文
+    * 试着换用微软拼音输入法。
+    * 在记事本里输入好后复制，右键点击程序标题栏，[编辑]->[粘贴]。
