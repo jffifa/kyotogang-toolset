@@ -106,10 +106,10 @@ class GConf:
 
     RATE_HEADER = {
         'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp:*/*;q=0.8',
-        #'Accept-Encoding','gzip,deflate:sdch',
         'Accept-Language':'zh-CN,zh;q=0.8:ja;q=0.6',
         'Cache-Control':'max-age=0',
-        'Connection':'keep-alive',
+        #'Connection':'keep-alive',
+        'Connection':'close',
         'User-Agent':FAKE_UA,
         'Origin':ORIGIN_URL,
         #'Referer':'http://bbs.saraba1st.com/2b/forum.php?mod=viewthread&tid=974473&page=1',
@@ -123,3 +123,7 @@ class GConf:
 
     # max users
     MAX_USER = 256
+
+    POST_PER_PAGE = 30
+
+    MAX_RATE_CONCURRENCY = 256

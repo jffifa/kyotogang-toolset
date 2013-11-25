@@ -27,9 +27,20 @@ class Session(object):
         self.status = gconf.SESSION_STATUS_INIT
         self.lastRes = None # last time connect response
 
+        self.mutex = False
 
     def get_cookie(self):
         return self.cookie # cookielib is thread safe itself
+
+    # thread safe urlopen?
+    def open(self, url, data=None):
+        while self.mutex:
+            sleep(0.1)
+        self.mutex = True
+        res = self.stream.open(url)
+        s = res.read()
+        self.mutex = False
+        return s
 
     def login(self):
         postData = {
@@ -40,17 +51,22 @@ class Session(object):
             'handlekey':'ls',
         }
         encPostData = urllib.urlencode(postData)
+
+        while self.mutex:
+            sleep(0.1)
+        self.mutex = True
         try:
             self.lastRes = self.stream.open(self.loginUrl, encPostData)
+            resStr = self.lastRes.read()
         except urllib2.URLError as e:
             if gconf.DEBUG:
                 print e.reason
 
-        resStr = self.lastRes.read()
         if (self.lastRes is not None) and (xmlparser.verify_login(resStr)):
             self.status = gconf.SESSION_STATUS_LOGIN
         else:
             self.status = gconf.SESSION_STATUS_LOGOUT
+        self.mutex = False
 
         if gconf.DEBUG:
             print resStr
@@ -59,6 +75,9 @@ class Session(object):
         if gconf.DEBUG:
             print self.username, self.status
 
+        while self.mutex:
+            sleep(0.1)
+        self.mutex = True
         try:
             if self.status == gconf.SESSION_STATUS_LOGIN:
                 self.lastRes = self.stream.open(self.keepConnUrl)
@@ -66,6 +85,7 @@ class Session(object):
             #self.status = gconf.SESSION_STATUS_LOGOUT
             if gconf.DEBUG:
                 print e.reason
+        self.mutex = False
 
         if gconf.DEBUG:
             for item in self.cookie:

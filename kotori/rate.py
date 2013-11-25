@@ -59,6 +59,9 @@ class Rate(object):
             rateLimit = 0
         return rateLimit
 
+    def get_page(floor):
+        return (floor-1)/gconf.POST_PER_PAGE+1
+
     def get_pid(tid, floor):
         pass
 
@@ -67,6 +70,23 @@ class Rate(object):
             return False
         if c > gconf.MAX_RATE_CONCURRENCY:
             c = gconf.MAX_RATE_CONCURRENCY
+
+        page = self.get_page(floor)
+        pid = self.get_pid(tid, floor)
+
+        rateHeader = copy.copy(gconf.RATE_HEADER)
+        rateRef = urlparse.urlunparse((
+            gconf.PROTOCOL,
+            gconf.BASE_URL,
+            gconf.FORUM_PATH,
+            '',
+            urllib.urlencode({
+                'mod':'viewthread',
+                'tid':str(tid),
+                'page':str(page)
+                }),
+            ''))
+        rateHeader['Referer'] = rateRef
 
     def multi_rate(self):
         pass
