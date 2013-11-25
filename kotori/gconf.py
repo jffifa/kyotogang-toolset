@@ -54,6 +54,22 @@ class GConf:
         })
     KEEP_CONN_URL = urlparse.urlunparse((PROTOCOL, BASE_URL, KEEP_CONN_PATH, '', KEEP_CONN_QUERY, ''))
 
+    # get rate form url
+    RATE_LIM_TID = 643316
+    RATE_LIM_PID = 22412315
+    RATE_FORM_PATH = '/2b/forum.php'
+    RATE_FORM_QUERY_DICT = {
+        'mod':'misc',
+        'action':'rate',
+        #'t':'1385395649378',
+        #'tid':'643316',
+        #'pid':'22412315',
+        'infloat':'yes',
+        'handlekey':'rate',
+        'inajax':'1',
+        'ajaxtarget':'fwin_content_rate',
+        }
+
     # fake user agent
     FAKE_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML: like Gecko) Chrome/31.0.1650.57 Safari/537.36'
 
@@ -62,16 +78,28 @@ class GConf:
         'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language':'zh-CN,zh;q=0.8,ja;q=0.6',
         'Cache-Control':'max-age=0',
-        'Connection':'keep-alive',
+        #'Connection':'keep-alive',
+        'Connection':'close',
         'User-Agent':FAKE_UA,
         'Origin':ORIGIN_URL,
         'Referer':FORUM_URL ,
+        }
+
+    RATE_FORM_HEADER = {
+        'Accept':'*/*',
+        'Accept-Language':'zh-CN,zh;q=0.8:ja;q=0.6',
+        #'Connection':'keep-alive',
+        'Connection':'close',
+        'User-Agent':FAKE_UA,
+        #'Referer':'http://bbs.saraba1st.com/2b/forum.php?mod=viewthread&tid=643316',
+        'X-Requested-With':'XMLHttpRequest',
         }
 
     # session status
     SESSION_STATUS_INIT = 0
     SESSION_STATUS_LOGIN = 1
     SESSION_STATUS_LOGOUT = 2
+    SESSION_STATUS_CONN = 3
 
     # max users
     MAX_USER = 256

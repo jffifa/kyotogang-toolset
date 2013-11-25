@@ -4,6 +4,7 @@ import cookielib
 import urllib
 import urllib2
 import xmlparser
+import time
 from gconf import GConf as gconf
 
 class Session(object):
@@ -26,6 +27,10 @@ class Session(object):
         self.status = gconf.SESSION_STATUS_INIT
         self.lastRes = None # last time connect response
 
+
+    def get_cookie(self):
+        return self.cookie # cookielib is thread safe itself
+
     def login(self):
         postData = {
             'fastloginfield':'username',
@@ -37,13 +42,12 @@ class Session(object):
         encPostData = urllib.urlencode(postData)
         try:
             self.lastRes = self.stream.open(self.loginUrl, encPostData)
-            #print self.lastRes.read()
         except urllib2.URLError as e:
             if gconf.DEBUG:
                 print e.reason
 
         resStr = self.lastRes.read()
-        if (self.lastRes is not None) and (xmlparser.verifyLogin(resStr)):
+        if (self.lastRes is not None) and (xmlparser.verify_login(resStr)):
             self.status = gconf.SESSION_STATUS_LOGIN
         else:
             self.status = gconf.SESSION_STATUS_LOGOUT

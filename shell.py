@@ -18,7 +18,7 @@ def gnu(uname, passwd):
         'username':uname,
         'password':passwd,
         'status':gconf.SESSION_STATUS_INIT,
-        'ratelim':-1,
+        'ratelim':0,
         }
 
 def lud():
@@ -47,7 +47,7 @@ def p_usage():
     q: 退出"""
     print s(usg)
 
-def p_user_data(userData={}, showRatelim=False):
+def p_user_data(userData={}, showRatelim=True):
     p_cutline()
     print s(u'当前已添加的用户列表:')
     if len(userData) == 0:
@@ -59,7 +59,7 @@ def p_user_data(userData={}, showRatelim=False):
                 print s(u'[已登录]'),
             else:
                 print s(u'[未登录]'),
-            print
+            print s(u'[今日评分限制: %d]') % (u[1]['ratelim'],)
 
 def add_user(userData=[]):
     p_cutline()
@@ -144,6 +144,10 @@ def lg(lCtrl=None, userData=[]):
         lCtrl.login()
         for u in userData.itervalues():
             u['status'] = lCtrl.sessions[u['username']].status
+        # get rate status
+        r = rate.Rate()
+        for s in lCtrl.sessions.itervalues():
+            userData[s.username]['ratelim'] = r.get_rate_limit(s)
         p_user_data(userData)
     return userData
 
