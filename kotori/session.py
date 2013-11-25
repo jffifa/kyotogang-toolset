@@ -3,7 +3,7 @@
 import cookielib
 import urllib
 import urllib2
-import parser
+import xmlparser
 from gconf import GConf as gconf
 
 class Session(object):
@@ -24,6 +24,7 @@ class Session(object):
         self.stream.addheaders = self.httpHeader.items()
 
         self.status = gconf.SESSION_STATUS_INIT
+        self.lastRes = None # last time connect response
 
     def login(self):
         postData = {
@@ -34,29 +35,46 @@ class Session(object):
             'handlekey':'ls',
         }
         encPostData = urllib.urlencode(postData)
-        res = self.stream.open(self.loginUrl, encPostData)
+        try:
+            self.lastRes = self.stream.open(self.loginUrl, encPostData)
+            #print self.lastRes.read()
+        except urllib2.URLError as e:
+            if gconf.DEBUG:
+                print e.reason
 
-        if parser.verifyLogin(res.read()):
+        resStr = self.lastRes.read()
+        if (self.lastRes is not None) and (xmlparser.verifyLogin(resStr)):
             self.status = gconf.SESSION_STATUS_LOGIN
         else:
             self.status = gconf.SESSION_STATUS_LOGOUT
 
         if gconf.DEBUG:
-            print res.read()
+            print resStr
     
     def keep_connect(self):
         if gconf.DEBUG:
             print self.username, self.status
 
-        if self.status == gconf.SESSION_STATUS_LOGIN:
-            res = self.stream.open(self.keepConnUrl)
+        try:
+            if self.status == gconf.SESSION_STATUS_LOGIN:
+                self.lastRes = self.stream.open(self.keepConnUrl)
+        except urllib2.URLError as e:
+            #self.status = gconf.SESSION_STATUS_LOGOUT
+            if gconf.DEBUG:
+                print e.reason
 
-        """"
         if gconf.DEBUG:
             for item in self.cookie:
                 print item.name, item.value
-            print res.read()
-        """
+            print self.lastRes.read()
 
     def logout(self):
         pass
+
+# test case
+if __name__ == '__main__':
+    s = Session('jffifa', '123456')
+    s.login()
+    import time
+    time.sleep(5)
+    s.keep_connect()

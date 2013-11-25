@@ -3,27 +3,32 @@
 import session
 import time
 import threading
+import Queue
 from gconf import GConf as gconf
 
 class LoginThread(threading.Thread):
     """login thread
     """
 
-    def __init__(self, interval=30):
+    def __init__(self, interval, userQueue, sessions):
         threading.Thread.__init__(self)
         self.daemon = True
         self.interval = interval
         self.intCnt = 0
-        self.sessions = {}
         self.threadStop = False
+        self.sessions = sessions
+        # userQueue is a tuple where the firse element is username and the second password
+        self.userQueue = userQueue 
 
-    def get_status(self):
-        return dict([(u, s.status) for (u, s) in self.sessions.iteritems()])
+        for u in self.sessions.itervalues():
+            self.userQueue.put(u.username)
 
     def run(self):
         # login each session
         for session in self.sessions.itervalues():
             session.login()
+            self.userQueue.get()
+            self.userQueue.task_done()
         
         # loop for sessions to keep connect
         while not self.threadStop:
@@ -52,36 +57,32 @@ class LoginCtrl(object):
 
 
     def __init__(self):
-        self.users = {}
+        #self.users = {}
+        self.sessions = {}
         self.loginThread = None
         self.logined = False
 
     def add_user(self, username='', password=''):
-        self.users[username] = {
-            'username':username, 
-            'password':password,
-            'status':gconf.SESSION_STATUS_INIT
-            }
+        self.sessions[username] = session.Session(
+            username = username,
+            password = password)
     
     def clear_users(self):
-        self.users = {}
+        self.sessions = {}
 
     def login(self):
-        self.loginThread = LoginThread(self.__class__.THREAD_INTERVAL)
-        for user in self.users.itervalues():
-            self.loginThread.sessions[user['username']] = session.Session(
-                username=user['username'],
-                password=user['password'])
+        q = Queue.Queue(gconf.MAX_USER)
+        self.loginThread = LoginThread(
+            interval = self.__class__.THREAD_INTERVAL,
+            userQueue = q,
+            sessions = self.sessions)
         self.loginThread.start()
-        while True:
-            statuses = self.loginThread.get_status()
-            if gconf.SESSION_STATUS_INIT in statuses.itervalues():
-                time.sleep(0.1)
-            else:
-                for username, status in statuses.iteritems():
-                    self.users[username]['status'] = status
-                break
+        q.join()
         self.logined = True
+
+        if gconf.DEBUG:
+            for u in self.sessions.itervalues():
+                print u.username, u.status
 
     def logout(self):
         self.loginThread.stop()
@@ -101,9 +102,9 @@ class LoginCtrl(object):
 if __name__ == '__main__':
     lc = LoginCtrl()
     lc.add_user('内田彩', '134134')
+    lc.add_user('jffifa', '123456')
     #lc.add_user('狂三小天使', '134134')
     lc.login()
-    print lc.users['内田彩']['status']
-    #print lc.users['狂三小天使']['status']
+    time.sleep(5)
     lc.logout()
 

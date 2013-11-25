@@ -1,1 +1,1 @@
-__all__ = ['parser', 'session', 'login', 'userdata']
+__all__ = ['xmlparser', 'session', 'login', 'userdata']

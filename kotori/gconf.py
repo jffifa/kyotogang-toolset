@@ -16,7 +16,7 @@ class GConf:
     INTERNAL_ENCODING = 'utf_8'
 
     # debug mode
-    DEBUG = False
+    DEBUG = True
 
     # global dir and file path settings
     BASE_DIR = os.path.dirname(__file__)
@@ -72,3 +72,6 @@ class GConf:
     SESSION_STATUS_INIT = 0
     SESSION_STATUS_LOGIN = 1
     SESSION_STATUS_LOGOUT = 2
+
+    # max users
+    MAX_USER = 256

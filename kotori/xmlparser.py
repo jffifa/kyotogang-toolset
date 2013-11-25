@@ -5,6 +5,9 @@ import HTMLParser
 import re
 from gconf import GConf as gconf
 
+def test(x):
+    print x
+
 def parseXML(xmlStr):
     return ET.fromstring(xmlStr).text
 

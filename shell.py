@@ -63,7 +63,10 @@ def p_user_data(userData={}, showRatelim=False):
 
 def add_user(userData=[]):
     p_cutline()
-    username = t(raw_input(s(u'请输入用户名: '))).encode(gconf.INTERNAL_ENCODING)
+    while True:
+        username = t(raw_input(s(u'请输入用户名: '))).encode(gconf.INTERNAL_ENCODING)
+        if len(username) > 0:
+            break
     password = ''
     while True:
         print s(u'请输入密码(屏幕上不会显示):'),
@@ -140,7 +143,7 @@ def lg(lCtrl=None, userData=[]):
             lCtrl.add_user(u['username'], u['password'])
         lCtrl.login()
         for u in userData.itervalues():
-            u['status'] = lCtrl.users[u['username']]['status']
+            u['status'] = lCtrl.sessions[u['username']].status
         p_user_data(userData)
     return userData
 
@@ -148,6 +151,7 @@ def rlg(lCtrl=None, userData=[]):
     if lCtrl.logined:
         lCtrl.logout()
     userData = lg(lCtrl, userData)
+    p_user_data(userData)
     return userData
 
 if __name__ == '__main__':
