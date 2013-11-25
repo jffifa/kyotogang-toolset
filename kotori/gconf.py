@@ -16,7 +16,7 @@ class GConf:
     INTERNAL_ENCODING = 'utf_8'
 
     # debug mode
-    DEBUG = True
+    DEBUG = False
 
     # global dir and file path settings
     BASE_DIR = os.path.dirname(__file__)
@@ -70,6 +70,15 @@ class GConf:
         'ajaxtarget':'fwin_content_rate',
         }
 
+    RATE_PATH = FORUM_PATH
+    RATE_QUERY_DICT = {
+        'mod':'misc',
+        'action':'rate',
+        'ratesubmit':'yes',
+        'infloat':'yes',
+        'inajax':'1'
+        }
+
     # fake user agent
     FAKE_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML: like Gecko) Chrome/31.0.1650.57 Safari/537.36'
 
@@ -93,6 +102,17 @@ class GConf:
         'User-Agent':FAKE_UA,
         #'Referer':'http://bbs.saraba1st.com/2b/forum.php?mod=viewthread&tid=643316',
         'X-Requested-With':'XMLHttpRequest',
+        }
+
+    RATE_HEADER = {
+        'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp:*/*;q=0.8',
+        #'Accept-Encoding','gzip,deflate:sdch',
+        'Accept-Language':'zh-CN,zh;q=0.8:ja;q=0.6',
+        'Cache-Control':'max-age=0',
+        'Connection':'keep-alive',
+        'User-Agent':FAKE_UA,
+        'Origin':ORIGIN_URL,
+        #'Referer':'http://bbs.saraba1st.com/2b/forum.php?mod=viewthread&tid=974473&page=1',
         }
 
     # session status

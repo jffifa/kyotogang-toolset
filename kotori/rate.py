@@ -14,9 +14,12 @@ class Rate(object):
     def __init__(self):
         pass
 
+    def gen_timestamp(self):
+        return str(int(time.time()))+str(random.randint(100, 999))
+
     def get_rate_form(self, tid, pid, session):
-        timestamp = str(int(time.time()))+str(random.randint(100, 999))
         queryDict = copy.copy(gconf.RATE_FORM_QUERY_DICT)
+        timestamp = self.gen_timestamp()
         queryDict['t'] = timestamp
         queryDict['tid'] = str(tid)
         queryDict['pid'] = str(pid)
@@ -56,12 +59,14 @@ class Rate(object):
             rateLimit = 0
         return rateLimit
 
+    def get_pid(tid, floor):
+        pass
+
     def rate(self, session, c, tid, floor):
         if self.get_rate_limit(session) < 0:
             return False
         if c > gconf.MAX_RATE_CONCURRENCY:
             c = gconf.MAX_RATE_CONCURRENCY
-
 
     def multi_rate(self):
         pass
