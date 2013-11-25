@@ -56,8 +56,12 @@ class Rate(object):
             rateLimit = 0
         return rateLimit
 
-    def rate(self):
-        pass
+    def rate(self, session, c, tid, floor):
+        if self.get_rate_limit(session) < 0:
+            return False
+        if c > gconf.MAX_RATE_CONCURRENCY:
+            c = gconf.MAX_RATE_CONCURRENCY
+
 
     def multi_rate(self):
         pass
