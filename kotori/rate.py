@@ -62,7 +62,7 @@ class Rate(object):
     def get_page(floor):
         return (floor-1)/gconf.POST_PER_PAGE+1
 
-    def get_pid(tid, floor):
+    def get_pid(session, tid, floor):
         pass
 
     def rate(self, session, c, tid, floor):
