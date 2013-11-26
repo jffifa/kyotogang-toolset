@@ -62,7 +62,7 @@ class Rate(object):
     def get_page(floor):
         return (floor-1)/gconf.POST_PER_PAGE+1
 
-    def get_pid(session, tid, floor):
+    def get_pid_author(session, tid, floor):
         pass
 
     def rate(self, session, c, tid, floor):
@@ -72,7 +72,7 @@ class Rate(object):
             c = gconf.MAX_RATE_CONCURRENCY
 
         page = self.get_page(floor)
-        pid = self.get_pid(tid, floor)
+        pid, author = self.get_pid_author(tid, floor)
 
         rateHeader = copy.copy(gconf.RATE_HEADER)
         rateRef = urlparse.urlunparse((

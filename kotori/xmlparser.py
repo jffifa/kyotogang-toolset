@@ -36,9 +36,9 @@ def parse_rate_limit(rateFormStr):
     p.feed(s)
     return p.rateLim
 
-def parse_pid_user(htmlStr, pageFloor):
+def parse_pid_author(htmlStr, pageFloor):
     """parse pid and author"""
-    class PidUserParser(HTMLParser):
+    class PidAuthorParser(HTMLParser):
         def __init__(self, floor):
             HTMLParser.__init__(self)
             self.postCnt = 0
@@ -75,7 +75,7 @@ def parse_pid_user(htmlStr, pageFloor):
                 self.authi = False
                 self.author = False
 
-    p = PidUserParser(pageFloor)
+    p = PidAuthorParser(pageFloor)
     p.feed(htmlStr)
     return p.info
 
