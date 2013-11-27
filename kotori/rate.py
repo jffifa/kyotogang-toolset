@@ -55,7 +55,7 @@ class Rate(object):
     def get_rate_limit(self, session):
         rateFormStr = self.get_rate_form(tid=gconf.RATE_LIM_TID, pid=gconf.RATE_LIM_PID, session=session)
         rateLimit = xmlparser.parse_rate_limit(rateFormStr)
-        if rateLimit is None or rateLimit < 0:
+        if rateLimit < 0:
             rateLimit = 0
         return rateLimit
 

@@ -5,9 +5,6 @@ from HTMLParser import HTMLParser
 import re
 from gconf import GConf as gconf
 
-def test(x):
-    print x
-
 def parseXML(xmlStr):
     return ET.fromstring(xmlStr).text
 
@@ -30,7 +27,11 @@ def parse_rate_limit(rateFormStr):
         
         def handle_data(self, data):
             if self.rateLim is None and self.tdCnt == 4: # magic number
-                self.rateLim = int(data)
+                try:
+                    self.rateLim = int(data)
+                except Exception as e:
+                    self.rateLim = -65536
+                    pass
     s = parseXML(rateFormStr)
     p = RateLimParser()
     p.feed(s)
