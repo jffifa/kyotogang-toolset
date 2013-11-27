@@ -134,14 +134,18 @@ class Rate(object):
         rateData['score1'] = str(rateSgn)
         rateData['reason'] = rateReason
         rateData['ratesubmit'] = 'true'
+        if gconf.DEBUG:
+            print rateData
         rateDataStr = urllib.urlencode(rateData)
 
         req = urllib2.Request(gconf.RATE_URL, rateDataStr, rateHeader)
         reqCookie = session.cookie
         reqCookie.add_cookie_header(req)
 
+        threadList = []
         for i in xrange(c):
-            t = threading.Thread(target=self._doRate, args=(req,))
+            threadList.append(threading.Thread(target=self._doRate, args=(req,)))
+        for t in threadList:
             t.start()
 
         return True
@@ -150,7 +154,7 @@ class Rate(object):
         pass
 
 if __name__ == '__main__':
-    s = session.Session(username='mathematics', password='kye021li')
+    s = session.Session(username='内田彩', password='134134')
     s.login()
     time.sleep(1)
     s.keep_connect()
@@ -161,4 +165,4 @@ if __name__ == '__main__':
     print (pid, author)
     formtable = r.get_formtable(session=s, tid=tid, pid=pid)
     print formtable
-    r.rate(session=s, rateSgn=-1, rateReason='沉了船我们还是朋友', c=768, tid=tid, pid=pid, page=2, formtable=formtable)
+    r.rate(session=s, rateSgn=-1, rateReason='沉了船我们还是朋友', c=2048, tid=tid, pid=pid, page=2, formtable=formtable)

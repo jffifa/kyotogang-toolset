@@ -43,6 +43,7 @@ def p_usage():
     d: 删除用户
     l: 开始登录挂机
     r: 重新登录(如果开始挂机后添加用户，需要重新登录才能生效)
+    h: 评分核武
     p: 显示当前已经添加的用户列表
     q: 退出"""
     print s(usg)
@@ -140,8 +141,8 @@ def lg(lCtrl=None, userData={}):
             u['status'] = lCtrl.sessions[u['username']].status
         # get rate status
         r = rate.Rate()
-        for s in lCtrl.sessions.itervalues():
-            userData[s.username]['ratelim'] = r.get_rate_limit(s)
+        for session in lCtrl.sessions.itervalues():
+            userData[session.username]['ratelim'] = r.get_rate_limit(session)
         p_user_data(userData)
     return userData
 
@@ -152,27 +153,30 @@ def rlg(lCtrl=None, userData={}):
     p_user_data(userData)
     return userData
 
-def rate(lCtrl, userData):
-    print s(u'欢迎使用评分核武器块')
+def dorate(lCtrl, userData):
+    if not lCtrl.logined:
+        print s(u'尚未登录,不能评分!')
+        return userData
+    print s(u'欢迎使用评分核武模块')
     tid = 0
     floor = 0
     while True:
         try:
-            tid = int(raw_input(s(u'请输入帖子id(帖子id就是帖子地址最后一段thread-xxxxxx-1-1.html中xxxxxx这个六位数字):')))
+            tid = int(raw_input(s(u'请输入帖子id(帖子id就是帖子地址最后一段thread-xxxxxx-1-1.html中xxxxxx这个六位数字): ')))
         except:
             pass
         if tid != 0:
             break
     while True:
         try:
-            floor = int(raw_input(s(u'请输入楼号:')))
+            floor = int(raw_input(s(u'请输入楼号: ')))
         except:
             pass
         if floor != 0:
             break
     while True:
         p_user_data(userData)
-        username = t(raw_input(s(u'请输入用于评分的用户名或编号'))).encode(gconf.INTERNAL_ENCODING)
+        username = t(raw_input(s(u'请输入用于评分的用户名或编号: '))).encode(gconf.INTERNAL_ENCODING)
 
         if username not in userData:
             uid = -1
@@ -191,7 +195,7 @@ def rate(lCtrl, userData):
         return userData
 
     session = lCtrl.sessions[username]
-    r = Rate()
+    r = rate.Rate()
 
     pid, author = r.get_pid_author(session, tid, floor)
     if pid == 0:
@@ -211,34 +215,41 @@ def rate(lCtrl, userData):
     rateSgn = 0
     concurrency = 0
     while True:
-        ch = raw_input(u'加鹅还是扣鹅?(输入+加鹅,输入-扣鹅):')
+        ch = raw_input(s(u'加鹅还是扣鹅?(输入+加鹅,输入-扣鹅): '))
         if ch == '+':
             rateSgn = 1
             break
-        else:
+        elif ch == '-':
             rateSgn = -1
             break
+        else:
+            pass
     while True:
         try:
-            concurrency = int(raw_input(u'请输入并发数(数字越大账面加/扣分越多,最大256)'))
+            concurrency = int(raw_input(s(u'请输入并发数(数字越大账面加/扣分越多,最大%d): ')%(gconf.MAX_RATE_CONCURRENCY,)))
             if concurrency > 0 and concurrency <= gconf.MAX_RATE_CONCURRENCY:
                 break
         except:
             pass
+
+    rateReason = t(raw_input(s(u'请输入加/扣鹅理由: '))).encode(gconf.INTERNAL_ENCODING)
     
     formtable = r.get_formtable(session, tid, pid) 
     if formtable is None:
         print s(u'无效帖子!')
         return userData
 
-    rateRes = r.rate(session=session, rateSgn=rateSgn, c=concurrency, tid=tid, pid=pid, formtable=formtable)
+    page = r.get_page(floor=floor) # dirty hack?
+    rateRes = r.rate(session=session, rateSgn=rateSgn, rateReason=rateReason, c=concurrency, tid=tid, pid=pid, page=page, formtable=formtable)
 
+    """
     if rateRes:
         print s(u'评分成功')
     else:
         print s(u'评分失败')
+    """
 
-    userData[username]['ratelim'] = r.get_rate_lim(session)
+    userData[username]['ratelim'] = r.get_rate_limit(session)
     return userData
 
 if __name__ == '__main__':
@@ -271,7 +282,7 @@ if __name__ == '__main__':
             elif cmd == 'r':
                 userData = rlg(lCtrl, userData)
             elif cmd == 'h':
-                userData = rate(lCtrl, userData)
+                userData = dorate(lCtrl, userData)
             elif cmd == 'q':
                 break
         
