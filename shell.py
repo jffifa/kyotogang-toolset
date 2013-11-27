@@ -158,6 +158,7 @@ def dorate(lCtrl, userData):
         print s(u'尚未登录,不能评分!')
         return userData
     print s(u'欢迎使用评分核武模块')
+    print
     tid = 0
     floor = 0
     while True:
@@ -202,6 +203,7 @@ def dorate(lCtrl, userData):
         print s(u'无效帖子!')
         return userData
 
+    print
     print s(u'您要评分的对象是'),
     print author.decode(gconf.INTERNAL_ENCODING) # is there any codecs error?
     print s(u'扣鹅须谨慎，善恶一念存。中山公园外，一笑泯风尘。确认评分(y=是, n=否)'),
