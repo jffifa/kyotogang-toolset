@@ -54,6 +54,7 @@ class Session(object):
 
         while self.mutex:
             sleep(0.1)
+
         self.mutex = True
         try:
             self.lastRes = self.stream.open(self.loginUrl, encPostData)
@@ -61,6 +62,9 @@ class Session(object):
         except urllib2.URLError as e:
             if gconf.DEBUG:
                 print e.reason
+        except Exception as e:
+            if gconf.DEBUG:
+                print e
 
         if (self.lastRes is not None) and (xmlparser.verify_login(resStr)):
             self.status = gconf.SESSION_STATUS_LOGIN
@@ -77,6 +81,7 @@ class Session(object):
 
         while self.mutex:
             sleep(0.1)
+
         self.mutex = True
         try:
             if self.status == gconf.SESSION_STATUS_LOGIN:
@@ -85,6 +90,9 @@ class Session(object):
             #self.status = gconf.SESSION_STATUS_LOGOUT
             if gconf.DEBUG:
                 print e.reason
+        except Exception as e:
+            if gconf.DEBUG:
+                print e
         self.mutex = False
 
         if gconf.DEBUG:
