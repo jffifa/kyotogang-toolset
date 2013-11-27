@@ -37,7 +37,12 @@ class Session(object):
         while self.mutex:
             sleep(0.1)
         self.mutex = True
-        res = self.stream.open(url)
+        while True:
+            try:
+                res = self.stream.open(url)
+                break
+            except:
+                pass
         s = res.read()
         self.mutex = False
         return s

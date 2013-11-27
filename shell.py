@@ -101,32 +101,26 @@ def del_user(userData={}):
     while True:
         p_user_data(userData)
         username = t(raw_input(s(u'请输入用户编号或用户名(0表示清空, 直接回车取消): '))).encode(gconf.INTERNAL_ENCODING)
-        uid = -1
 
-        try:
-            uid = int(username)
-        except:
-            pass
-
-        if username == '':
-            break
-        elif uid == 0:
-            userData = {}
+        if username in userData:
+            del userData[username]
             break
         else:
-            if uid != -1:
-                if uid < 0 or uid > len(userData):
-                    print s(u'用户不存在')
-                else:
-                    un = userData.values()[uid-1]['username']
-                    del userData[un]
-                    break
+            uid = -1
+            try:
+                uid = int(username)
+            except:
+                pass
+
+            if uid == 0:
+                userData = {}
+                break
+            elif uid > 0 and uid <= len(userData):
+                username = userData.values()[uid-1]['username']
+                del userData[username]
+                break
             else:
-                if not username in userData:
-                    print s(u'用户不存在')
-                else:
-                    del userData[username]
-                    break
+                print s(u'用户不存在')
 
     sud(userData)
 
@@ -135,7 +129,7 @@ def del_user(userData={}):
 
     return userData
 
-def lg(lCtrl=None, userData=[]):
+def lg(lCtrl=None, userData={}):
     if lCtrl.logined:
         print s(u'已经在挂机中')
     else:
@@ -151,11 +145,100 @@ def lg(lCtrl=None, userData=[]):
         p_user_data(userData)
     return userData
 
-def rlg(lCtrl=None, userData=[]):
+def rlg(lCtrl=None, userData={}):
     if lCtrl.logined:
         lCtrl.logout()
     userData = lg(lCtrl, userData)
     p_user_data(userData)
+    return userData
+
+def rate(lCtrl, userData):
+    print s(u'欢迎使用评分核武器块')
+    tid = 0
+    floor = 0
+    while True:
+        try:
+            tid = int(raw_input(s(u'请输入帖子id(帖子id就是帖子地址最后一段thread-xxxxxx-1-1.html中xxxxxx这个六位数字):')))
+        except:
+            pass
+        if tid != 0:
+            break
+    while True:
+        try:
+            floor = int(raw_input(s(u'请输入楼号:')))
+        except:
+            pass
+        if floor != 0:
+            break
+    while True:
+        p_user_data(userData)
+        username = t(raw_input(s(u'请输入用于评分的用户名或编号'))).encode(gconf.INTERNAL_ENCODING)
+
+        if username not in userData:
+            uid = -1
+            try:
+                uid = int(username)
+            except:
+                pass
+            if uid > 0 and uid <= len(userData):
+                username = userData.values()[uid-1]['username']
+                break
+        else:
+            break
+
+    if userData[username]['ratelim'] <= 0:
+        print s(u'今日评分额度已用完')
+        return userData
+
+    session = lCtrl.sessions[username]
+    r = Rate()
+
+    pid, author = r.get_pid_author(session, tid, floor)
+    if pid == 0:
+        print s(u'无效帖子!')
+        return userData
+
+    print s(u'您要评分的对象是'),
+    print author.decode(gconf.INTERNAL_ENCODING) # is there any codecs error?
+    print s(u'扣鹅须谨慎，善恶一念存。中山公园外，一笑泯风尘。确认评分(y=是, n=否)'),
+    while True:
+        ch = raw_input('?')
+        if ch == 'n':
+            return userData
+        else:
+            break
+
+    rateSgn = 0
+    concurrency = 0
+    while True:
+        ch = raw_input(u'加鹅还是扣鹅?(输入+加鹅,输入-扣鹅):')
+        if ch == '+':
+            rateSgn = 1
+            break
+        else:
+            rateSgn = -1
+            break
+    while True:
+        try:
+            concurrency = int(raw_input(u'请输入并发数(数字越大账面加/扣分越多,最大256)'))
+            if concurrency > 0 and concurrency <= gconf.MAX_RATE_CONCURRENCY:
+                break
+        except:
+            pass
+    
+    formtable = r.get_formtable(session, tid, pid) 
+    if formtable is None:
+        print s(u'无效帖子!')
+        return userData
+
+    rateRes = r.rate(session=session, rateSgn=rateSgn, c=concurrency, tid=tid, pid=pid, formtable=formtable)
+
+    if rateRes:
+        print s(u'评分成功')
+    else:
+        print s(u'评分失败')
+
+    userData[username]['ratelim'] = r.get_rate_lim(session)
     return userData
 
 if __name__ == '__main__':
@@ -187,6 +270,8 @@ if __name__ == '__main__':
                 userData = lg(lCtrl, userData)
             elif cmd == 'r':
                 userData = rlg(lCtrl, userData)
+            elif cmd == 'h':
+                userData = rate(lCtrl, userData)
             elif cmd == 'q':
                 break
         

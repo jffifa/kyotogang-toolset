@@ -71,13 +71,20 @@ class GConf:
         }
 
     RATE_PATH = FORUM_PATH
-    RATE_QUERY_DICT = {
+    RATE_QUERY = urllib.urlencode({
         'mod':'misc',
         'action':'rate',
         'ratesubmit':'yes',
         'infloat':'yes',
         'inajax':'1'
-        }
+        })
+    RATE_URL = urlparse.urlunparse((
+        PROTOCOL, 
+        BASE_URL,
+        FORUM_PATH,
+        '',
+        RATE_QUERY,
+        ''))
 
     # fake user agent
     FAKE_UA = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML: like Gecko) Chrome/31.0.1650.57 Safari/537.36'
