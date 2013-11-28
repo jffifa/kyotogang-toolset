@@ -48,19 +48,22 @@ def p_usage():
     q: 退出"""
     print s(usg)
 
-def p_user_data(userData={}, showRatelim=True):
+def p_user_data(userData={}, rateLim=False):
     p_cutline()
     print s(u'当前已添加的用户列表:')
     if len(userData) == 0:
         print s(u'无')
     else:
         for u in enumerate(userData.itervalues(), start=1):
-            print str(u[0])+'>', s(u[1]['username'].decode(gconf.INTERNAL_ENCODING)),
-            if u[1]['status'] == gconf.SESSION_STATUS_LOGIN:
-                print s(u'[已登录]'),
+            if rateLim and u[1]['ratelim']<=0:
+                continue
             else:
-                print s(u'[未登录]'),
-            print s(u'[今日评分限制: %d]') % (u[1]['ratelim'],)
+                print str(u[0])+'>', s(u[1]['username'].decode(gconf.INTERNAL_ENCODING)),
+                if u[1]['status'] == gconf.SESSION_STATUS_LOGIN:
+                    print s(u'[已登录]'),
+                else:
+                    print s(u'[未登录]'),
+                print s(u'[今日评分限制: %d]') % (u[1]['ratelim'],)
 
 def add_user(userData=[]):
     p_cutline()
@@ -176,7 +179,7 @@ def dorate(lCtrl, userData):
         if floor != 0:
             break
     while True:
-        p_user_data(userData)
+        p_user_data(userData=userData, rateLim=True)
         username = t(raw_input(s(u'请输入用于评分的用户名或编号: '))).encode(gconf.INTERNAL_ENCODING)
 
         if username not in userData:
