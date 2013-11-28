@@ -36,4 +36,4 @@ kyotogang-toolset
     * 调试信息，请不用在意。
 
 ## 其它问题反馈
-请联系狂三小天使<jffifa@gmail.com>，谢谢。
+请联系 狂三小天使 jffifa#gmail.com，谢谢。
