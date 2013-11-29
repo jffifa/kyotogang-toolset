@@ -48,24 +48,42 @@ def p_usage():
     q: 退出"""
     print s(usg)
 
-def p_user_data(userData={}, rateLim=False):
+def p_user_data(userList, userData, rateLim=False):
     p_cutline()
     print s(u'当前已添加的用户列表:')
-    if len(userData) == 0:
+    if len(userList) == 0:
         print s(u'无')
     else:
-        for u in enumerate(userData.itervalues(), start=1):
-            if rateLim and u[1]['ratelim']<=0:
+        for i in xrange(len(userList)):
+            if rateLim and userData[userList[i]]['ratelim']<=0:
                 continue
             else:
-                print str(u[0])+'>', s(u[1]['username'].decode(gconf.INTERNAL_ENCODING)),
-                if u[1]['status'] == gconf.SESSION_STATUS_LOGIN:
+                print str(i+1)+'>', s(userData[userList[i]]['username'].decode(gconf.INTERNAL_ENCODING)),
+                if userData[userList[i]]['status'] == gconf.SESSION_STATUS_LOGIN:
                     print s(u'[已登录]'),
                 else:
                     print s(u'[未登录]'),
-                print s(u'[今日评分限制: %d]') % (u[1]['ratelim'],)
+                print s(u'[今日评分限制: %d]') % (userData[userList[i]]['ratelim'],)
 
-def add_user(userData=[]):
+def parse_un(us, userList, userData):
+    if us not in userData:
+        uid = -1
+        try:
+            uid = int(us)
+        except:
+            return None
+        if uid > 0 and uid <= len(userList):
+            return userList[uid-1]
+        else:
+            return None
+    else:
+        return us
+    return None
+
+def add_user(userList, userData):
+    if len(userList) >= gconf.MAX_USER:
+        print s(u'已达到用户数上限制!')
+        return None
     p_cutline()
     while True:
         username = t(raw_input(s(u'请输入用户名: '))).encode(gconf.INTERNAL_ENCODING)
@@ -89,51 +107,35 @@ def add_user(userData=[]):
                 userData[username]['password'] = password
                 break
             elif c == 'n':
-                confirm = False
                 break
     else:
         userData[username] = gnu(username, password)
+        userList.append(username)
 
     sud(userData)
 
     if gconf.DEBUG:
         print userData
 
-    return userData
-
-def del_user(userData={}):
+def del_user(userList, userData):
     while True:
-        p_user_data(userData)
+        p_user_data(userList, userData)
         username = t(raw_input(s(u'请输入用户编号或用户名(0表示清空, 直接回车取消): '))).encode(gconf.INTERNAL_ENCODING)
 
-        if username in userData:
-            del userData[username]
-            break
+        username = parse_un(username, userList, userData)
+        if username is None:
+            print s(u'用户不存在')
         else:
-            uid = -1
-            try:
-                uid = int(username)
-            except:
-                pass
-
-            if uid == 0:
-                userData = {}
-                break
-            elif uid > 0 and uid <= len(userData):
-                username = userData.values()[uid-1]['username']
-                del userData[username]
-                break
-            else:
-                print s(u'用户不存在')
+            del userData[username]
+            userList.remove(username)
+            break
 
     sud(userData)
 
     if gconf.DEBUG:
         print userData
 
-    return userData
-
-def lg(lCtrl=None, userData={}):
+def lg(lCtrl, userList, userData):
     if lCtrl.logined:
         print s(u'已经在挂机中')
     else:
@@ -146,20 +148,17 @@ def lg(lCtrl=None, userData={}):
         r = rate.Rate()
         for session in lCtrl.sessions.itervalues():
             userData[session.username]['ratelim'] = r.get_rate_limit(session)
-        p_user_data(userData)
-    return userData
+        p_user_data(userList, userData)
 
-def rlg(lCtrl=None, userData={}):
+def rlg(lCtrl, userList, userData):
     if lCtrl.logined:
         lCtrl.logout()
-    userData = lg(lCtrl, userData)
-    p_user_data(userData)
-    return userData
+    userData = lg(lCtrl, userList, userData)
 
-def dorate(lCtrl, userData):
+def dorate(lCtrl, userList, userData):
     if not lCtrl.logined:
         print s(u'尚未登录,不能评分!')
-        return userData
+        return
     print s(u'欢迎使用评分核武模块')
     print
     tid = 0
@@ -178,33 +177,13 @@ def dorate(lCtrl, userData):
             pass
         if floor != 0:
             break
-    while True:
-        p_user_data(userData=userData, rateLim=True)
-        username = t(raw_input(s(u'请输入用于评分的用户名或编号: '))).encode(gconf.INTERNAL_ENCODING)
 
-        if username not in userData:
-            uid = -1
-            try:
-                uid = int(username)
-            except:
-                pass
-            if uid > 0 and uid <= len(userData):
-                username = userData.values()[uid-1]['username']
-                break
-        else:
-            break
-
-    if userData[username]['ratelim'] <= 0:
-        print s(u'今日评分额度已用完')
-        return userData
-
-    session = lCtrl.sessions[username]
     r = rate.Rate()
 
-    pid, author = r.get_pid_author(session, tid, floor)
+    pid, author = r.get_pid_author(tid, floor)
     if pid == 0:
         print s(u'无效帖子!')
-        return userData
+        return
 
     print
     print s(u'您要评分的对象是'),
@@ -213,9 +192,40 @@ def dorate(lCtrl, userData):
     while True:
         ch = raw_input('?')
         if ch == 'n':
-            return userData
+            return
+        elif ch == 'y':
+            break
+
+    usernames = []
+    while True:
+        p_user_data(userList=userList, userData=userData, rateLim=True)
+        _hint = u'请输入用于评分的用户名或编号(如果想队形队形就输入多个帐号,账号间用空格隔开): '
+        unstr = t(raw_input(s(_hint))).encode(gconf.INTERNAL_ENCODING).strip()
+        un = unstr.split(' ')
+
+        flag = True
+        for username in un:
+            username = parse_un(username, userList, userData)
+            if username is None:
+                flag = False
+                break
+            else:
+                usernames.append(username)
+        if flag == False:
+            print s(u'输入非法')
         else:
             break
+
+    sessions = []
+    for username in usernames:
+        if userData[username]['status'] != gconf.SESSION_STATUS_LOGIN:
+            print s(u'帐号 %s 尚未登录') % username
+            return
+        elif userData[username]['ratelim'] <= 0:
+            print s(u'帐号 %s 今日评分额度已用完') % username
+            return
+        else:
+            sessions.append(lCtrl.sessions[username])
 
     rateSgn = 0
     concurrency = 0
@@ -237,25 +247,27 @@ def dorate(lCtrl, userData):
         except:
             pass
 
-    rateReason = t(raw_input(s(u'请输入加/扣鹅理由: '))).encode(gconf.INTERNAL_ENCODING)
-    
-    formtable = r.get_formtable(session, tid, pid) 
-    if formtable is None:
-        print s(u'无效帖子!')
-        return userData
+    rateReasons = []
+    while True:
+        _hint = u'请输入加/扣鹅理由(如果想队形评分就输入多个理由,理由间用空格隔开,数量必须和之前输入的用户数相同): '
+        reasonstr = t(raw_input(s(_hint))).encode(gconf.INTERNAL_ENCODING).strip()
+        rateReasons = reasonstr.split(' ')
+
+        if len(rateReasons) == len(sessions):
+            break
+        else:
+            continue
 
     page = r.get_page(floor=floor) # dirty hack?
-    rateRes = r.rate(session=session, rateSgn=rateSgn, rateReason=rateReason, c=concurrency, tid=tid, pid=pid, page=page, formtable=formtable)
+    rateRes = r.multi_rate(sessions=sessions, rateSgn=rateSgn, rateReasons=rateReasons, c=concurrency, tid=tid, pid=pid, page=page)
 
-    """
     if rateRes:
         print s(u'评分成功')
     else:
         print s(u'评分失败')
-    """
 
-    userData[username]['ratelim'] = r.get_rate_limit(session)
-    return userData
+    for username, session in zip(usernames, sessions):
+        userData[username]['ratelim'] = r.get_rate_limit(session)
 
 if __name__ == '__main__':
     try:
@@ -269,7 +281,8 @@ if __name__ == '__main__':
 
         p_kotori()
         userData = lud()
-        p_user_data(userData)
+        userList = [u['username'] for u in userData.itervalues()]
+        p_user_data(userList, userData)
 
         lCtrl = login.LoginCtrl()
 
@@ -277,17 +290,17 @@ if __name__ == '__main__':
             p_usage()
             cmd = raw_input(s(u'请输入命令: '))
             if cmd == 'a':
-                userData = add_user(userData)
+                add_user(userList, userData)
             elif cmd == 'd':
-                userData = del_user(userData)
+                del_user(userList, userData)
             elif cmd == 'p':
-                p_user_data(userData)
+                p_user_data(userList, userData)
             elif cmd == 'l':
-                userData = lg(lCtrl, userData)
+                lg(lCtrl, userList, userData)
             elif cmd == 'r':
-                userData = rlg(lCtrl, userData)
+                rlg(lCtrl, userList, userData)
             elif cmd == 'h':
-                userData = dorate(lCtrl, userData)
+                dorate(lCtrl, userList, userData)
             elif cmd == 'q':
                 break
         

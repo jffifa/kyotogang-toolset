@@ -65,7 +65,7 @@ class Rate(object):
     def get_page(self, floor):
         return (floor-1)/gconf.POST_PER_PAGE+1
 
-    def get_pid_author(self, session, tid, floor):
+    def get_pid_author(self, tid, floor):
         page = self.get_page(floor)
         url = urlparse.urlunparse((
             gconf.PROTOCOL,
@@ -78,7 +78,8 @@ class Rate(object):
             '',
             '',
             ''))
-        htmlStr = session.open(url)
+        tmpSession = session.Session(username=None, password=None)
+        htmlStr = tmpSession.open(url)
         #print htmlStr
         pid, author = xmlparser.parse_pid_author(htmlStr, floor-gconf.POST_PER_PAGE*(page-1))
         return (pid, author)
@@ -147,22 +148,51 @@ class Rate(object):
             threadList.append(threading.Thread(target=self._doRate, args=(req,)))
         for t in threadList:
             t.start()
+        for t in threadList:
+            t.join()
 
         return True
 
-    def multi_rate(self):
-        pass
+    def multi_rate(self, sessions, rateSgn, rateReasons, c, tid, pid, page):
+        formtables = []
+        for s in sessions:
+            formtable = self.get_formtable(s, tid, pid)
+            if formtable is None:
+                return False
+            else:
+                formtables.append(formtable)
+
+        rrateReasons = rateReasons[::-1]
+
+        reslist = map(lambda s,rr,ft: self.rate(
+            session=s,
+            rateSgn=rateSgn,
+            rateReason=rr,
+            c=c,
+            tid=tid,
+            pid=pid,
+            page=page,
+            formtable=ft), sessions, rrateReasons, formtables);
+
+        return reduce(lambda x,y:x and y, reslist)
 
 if __name__ == '__main__':
+    """
     s = session.Session(username='内田彩', password='134134')
     s.login()
     time.sleep(1)
     s.keep_connect()
     r = Rate()
-    print r.get_rate_limit(session=s)
+    #print r.get_rate_limit(session=s)
     tid = 976137
     pid, author = r.get_pid_author(session=s, tid=tid, floor=51)
-    print (pid, author)
+    #print (pid, author)
     formtable = r.get_formtable(session=s, tid=tid, pid=pid)
-    print formtable
+    #print formtable
     r.rate(session=s, rateSgn=-1, rateReason='沉了船我们还是朋友', c=2048, tid=tid, pid=pid, page=2, formtable=formtable)
+    """
+    r = Rate()
+    tid = 976137
+    s2 = session.Session(username=None, password=None)
+    pid, author = r.get_pid_author(session=s2, tid=tid, floor=51)
+    print pid, author
