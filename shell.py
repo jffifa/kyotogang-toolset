@@ -31,16 +31,17 @@ def sud(userData={}):
     userdata.UserData().save_user_data(l)
 
 def p_kotori():
-    kotoriPath = os.path.join([gconf.BASE_DIR, gconf.KOTORI_ASCII_PATH])
+    kotoriPath = os.path.join(gconf.BASE_DIR, gconf.KOTORI_ASCII_PATH)
     f = open(kotoriPath, 'r')
     str_kotori = f.read()
     f.close()
     # detect os platform
     if platform.system() == 'Windows':
         os.system('mode con: cols=%d lines=%d' % (89, 512))
+        print str_kotori
     else:
-        os.
-    time.sleep(2)
+        print str_kotori
+    time.sleep(2.5)
 
 def p_cutline():
     print
