@@ -22,6 +22,8 @@ class GConf:
     BASE_DIR = os.path.dirname(__file__)
     USER_DATA_PATH = os.path.join(BASE_DIR, 'data', 'user')
 
+    KOTORI_ASCII_PATH = 'kotori_ascii'
+
     # global conf for urls
     PROTOCOL = 'http'
     BASE_URL = 'bbs.saraba1st.com'

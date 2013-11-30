@@ -3,9 +3,10 @@
 from kotori import *
 from kotori.gconf import GConf as gconf
 import sys
-import codecs
 import getpass
 import time
+import os
+import platform
 
 def s(u_str):
     return u_str.encode(gconf.SHELL_ENCODING)
@@ -30,7 +31,16 @@ def sud(userData={}):
     userdata.UserData().save_user_data(l)
 
 def p_kotori():
-    pass
+    kotoriPath = os.path.join([gconf.BASE_DIR, gconf.KOTORI_ASCII_PATH])
+    f = open(kotoriPath, 'r')
+    str_kotori = f.read()
+    f.close()
+    # detect os platform
+    if platform.system() == 'Windows':
+        os.system('mode con: cols=%d lines=%d' % (89, 512))
+    else:
+        os.
+    time.sleep(2)
 
 def p_cutline():
     print
@@ -165,7 +175,7 @@ def dorate(lCtrl, userList, userData):
     floor = 0
     while True:
         try:
-            tid = int(raw_input(s(u'请输入帖子id(帖子id就是帖子地址最后一段thread-xxxxxx-1-1.html中xxxxxx这个六位数字): ')))
+            tid = int(raw_input(s(u'请输入帖子id\n(帖子id就是帖子地址最后一段thread-xxxxxx-1-1.html中xxxxxx这个六位数字): ')))
         except:
             pass
         if tid != 0:
@@ -199,7 +209,7 @@ def dorate(lCtrl, userList, userData):
     usernames = []
     while True:
         p_user_data(userList=userList, userData=userData, rateLim=True)
-        _hint = u'请输入用于评分的用户名或编号(如果想队形队形就输入多个帐号,账号间用空格隔开): '
+        _hint = u'请输入用于评分的用户名或编号\n(如果想队形队形就输入多个帐号,账号间用空格隔开): '
         unstr = t(raw_input(s(_hint))).encode(gconf.INTERNAL_ENCODING).strip()
         un = unstr.split(' ')
 
@@ -249,7 +259,7 @@ def dorate(lCtrl, userList, userData):
 
     rateReasons = []
     while True:
-        _hint = u'请输入加/扣鹅理由(如果想队形评分就输入多个理由,理由间用空格隔开,数量必须和之前输入的用户数相同): '
+        _hint = u'请输入加/扣鹅理由\n(如果想队形评分就输入多个理由,理由间用空格隔开,数量必须和之前输入的用户数相同): '
         reasonstr = t(raw_input(s(_hint))).encode(gconf.INTERNAL_ENCODING).strip()
         rateReasons = reasonstr.split(' ')
 
