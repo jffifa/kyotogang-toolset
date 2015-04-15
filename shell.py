@@ -282,7 +282,7 @@ def dorate(lCtrl, userList, userData):
 
 if __name__ == '__main__':
     try:
-        group_id = raw_input(s(u'请输入群号: '))
+        group_id = raw_input(s(u'请输入群号: ')).strip()
 
         if group_id != gconf.GROUP_ID:
             print s(u'抱歉！该工具仅限内部使用！')
